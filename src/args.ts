@@ -21,7 +21,7 @@ const args = yargs({})
       alias: 't',
       group: 'Input',
       type: "number",
-      default: 72 * 3600,
+      default: null,
       desc: "process to at most the specified time"
     },
 
@@ -66,7 +66,7 @@ const args = yargs({})
 export const videoFile = args.video;
 export const seekTo = args.from;
 export const processTo = args.to;
-export const duration = (args.to - args.from);
+export const duration = args.to ? (args.to - args.from) : Infinity;
 
 export const cacheFile = args.cache ? args.cache : args.video + '.json';
 export const outputFile = args.output;
@@ -75,4 +75,4 @@ export const cooldown = args.cooldown;
 export const audioThreshold = args["audio-threshold"];
 export const audioRangeBase: "avg" | "min" = args["audio-range-base"] as "avg" | "min";
 
-ok(seekTo < processTo, 'starting point cannot be lower or equal to ending point');
+ok(processTo === null || seekTo < processTo, 'starting point cannot be lower or equal to ending point');

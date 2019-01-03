@@ -99,30 +99,32 @@ export namespace Cache {
   let cacheData: CacheData;
 
   export function cacheValid(cache: CacheData) {
-    if (cache.args.start !== undefined && cache.args.start !== seekTo) return false;
-    if (cache.args.end !== undefined && cache.args.end !== processTo) return false;
+    if (cache.args.start === undefined || cache.args.start !== seekTo) return false;
+    if (cache.args.end === undefined || cache.args.end !== processTo) return false;
     if (cache.args.file !== videoFile) return false;
     return true;
+  }
+
+  function defaultCache() : CacheData{
+    return {
+      args: {
+        file: videoFile,
+        start: seekTo,
+        end: processTo || undefined
+      }
+    }
   }
 
   export function load(): CacheData {
     if (cacheData) return cacheData;
 
     if (!cacheFile || !existsSync(cacheFile)) {
-      return cacheData = {
-        args: {
-          file: videoFile
-        }
-      }
+      return cacheData = defaultCache();
     }
 
     const data = JSON.parse(readFileSync(cacheFile).toString()) as CacheData;
     if (!cacheValid(data)) {
-      return cacheData = {
-        args: {
-          file: videoFile
-        }
-      }
+      return cacheData = defaultCache();
     }
 
     return cacheData = data;
