@@ -41,6 +41,23 @@ Options:
 
 ```
 
+## Example
+
 ```
-$ ./index -i file.mp4 -o activations.txt
+youtube-dl -f "worst" https://www.twitch.tv/videos/357930411## --id
+$ ./index -i v357930411.mp4 -o activations.txt
+...
+Audio activation threshold is -18.41
+Audio max level is -15.81
+Audio min level is -149.98
+Audio avg level is -41.86
+...
+Activation at 00:07:58.052 peak of -17.15
+Activation at 00:10:03.510 peak of -18.06
+Activation at 00:11:07.272 peak of -18.11
+Activation at 00:14:37.111 peak of -17.88
+Activation at 00:14:46.979 peak of -15.81
+Activation at 00:20:02.490 peak of -17.09
+Activation at 00:20:21.560 peak of -17.64
+...
 ```
