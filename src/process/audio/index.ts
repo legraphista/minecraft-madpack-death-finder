@@ -1,5 +1,5 @@
-import {audioThreshold, videoFile} from "../../args";
-import {activations2time} from "../helpers";
+import {audioThreshold, duration, seekTo, videoFile} from "../../args";
+import {activations2time, hour} from "../helpers";
 
 const FFMpeg = require('ffmpeg-progress-wrapper');
 
@@ -8,10 +8,12 @@ const FFMpeg = require('ffmpeg-progress-wrapper');
 const run = async function run() {
 
   const process = new FFMpeg([
+    '-ss', seekTo,
+    '-t', Math.min(72 * hour, duration),
     '-i', videoFile,
     '-af', 'astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level',
     '-f', 'null', '-'
-  ]);
+  ], { duration: duration > 72 * hour ? undefined : duration * 1000 });
 
   const times: number[] = [];
   const levels: number[] = [];
@@ -27,7 +29,7 @@ const run = async function run() {
     for (const line of lines) {
       if (line.indexOf('pts_time:') !== -1) {
         const [, time] = line.split('pts_time:');
-        times.push(parseFloat(time));
+        times.push(parseFloat(time) + seekTo);
       }
       if (line.indexOf('RMS_level=') !== -1) {
         const [, level] = line.split('RMS_level=');
@@ -37,7 +39,12 @@ const run = async function run() {
 
   });
 
-  await process.done();
+  try {
+    await process.done();
+  } catch (e) {
+    console.error(process._output);
+    throw e;
+  }
 
   return { levels, times };
 };
@@ -48,13 +55,13 @@ const process = ({ levels }: { levels: number[] }) => {
   const range = (max - min);
   const threshold = max - (audioThreshold * range);
 
-  return levels.map(level => level > threshold);
+  return { activations: levels.map(level => level > threshold), threshold, min, max };
 };
 
 export default async function audio() {
   const { levels, times } = await run();
 
-  const activations = process({ levels });
+  const { activations, threshold, min, max } = process({ levels });
 
   const activeTimes = activations2time({ activations, times });
 
@@ -63,5 +70,5 @@ export default async function audio() {
     return levels[i];
   });
 
-  return {times: activeTimes, levels: activationLevels};
+  return { threshold, times: activeTimes, levels: activationLevels, min, max };
 }

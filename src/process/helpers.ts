@@ -26,9 +26,9 @@ export function activations2time({ activations, times }: { activations: boolean[
 }
 
 
-const second = 1;
-const minute = second * 60;
-const hour = minute * 60;
+export const second = 1;
+export const minute = second * 60;
+export const hour = minute * 60;
 
 const fixTime = (time: number | string) => time < 10 ? `0${time}` : time.toString();
 

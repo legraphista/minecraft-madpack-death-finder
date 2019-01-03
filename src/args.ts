@@ -1,4 +1,5 @@
 import yargs from 'yargs'
+import {ok} from 'assert';
 
 const args = yargs({})
   .options({
@@ -8,6 +9,20 @@ const args = yargs({})
       group: 'Input',
       type: 'string',
       desc: 'video file path'
+    },
+    'from': {
+      alias: 's',
+      group: 'Input',
+      type: "number",
+      default: 0,
+      desc: "seek to specified time before starting"
+    },
+    'to': {
+      alias: 't',
+      group: 'Input',
+      type: "number",
+      default: Infinity,
+      desc: "process to at most the specified time"
     },
 
     'output': {
@@ -35,6 +50,13 @@ const args = yargs({})
   .argv;
 
 export const videoFile = args.video;
+export const seekTo = args.from;
+export const processTo = args.to;
+export const duration = (args.to - args.from);
+
 export const outputFile = args.output;
+
 export const cooldown = args.cooldown;
 export const audioThreshold = args["audio-threshold"];
+
+ok(seekTo < processTo, 'starting point cannot be lower or equal to ending point');
