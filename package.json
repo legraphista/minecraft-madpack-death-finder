@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "ffmpeg-progress-wrapper": "^0.4.0",
-    "opencv4nodejs": "^4.13.0",
     "source-map-support": "^0.5.9",
     "yargs": "^12.0.5"
   }
