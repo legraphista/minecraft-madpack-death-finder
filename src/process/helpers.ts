@@ -1,5 +1,6 @@
-import {cooldown} from "../args";
-import {appendFileSync, existsSync, unlinkSync} from "fs";
+import {cacheFile, cooldown, processTo, seekTo, videoFile} from "../args";
+import {appendFileSync, existsSync, readFileSync, unlinkSync, writeFileSync} from "fs";
+import {CacheData} from "./helpers";
 
 export function activations2time({ activations, times }: { activations: boolean[], times: number[] }) {
   const activationTimes: number[] = [];
@@ -39,25 +40,6 @@ export function time2human(time: number) {
   return `${fixTime(h)}:${fixTime(m)}:${fixTime(s)}`;
 }
 
-export class Output {
-  file: string;
-
-  constructor(file: string) {
-    this.file = file;
-
-    if (file && existsSync(file)) {
-      unlinkSync(file);
-    }
-  }
-
-  write(text: string) {
-    if (this.file) {
-      appendFileSync(this.file, text + '\n');
-    }
-    console.log(text);
-  }
-}
-
 export function min(vals: number[]) {
   let min = vals[0];
   for (let i = 1; i < vals.length; ++i) {
@@ -79,4 +61,70 @@ export function max(vals: number[]) {
     }
   }
   return max;
+}
+
+export class Output {
+  file: string;
+
+  constructor(file: string) {
+    this.file = file;
+
+    if (file && existsSync(file)) {
+      unlinkSync(file);
+    }
+  }
+
+  write(text: string) {
+    if (this.file) {
+      appendFileSync(this.file, text + '\n');
+    }
+    console.log(text);
+  }
+}
+
+export interface CacheData {
+  args: {
+    file: string,
+    start?: number,
+    end?: number
+  },
+  audio_db?: {
+    levels: number[],
+    times: number[],
+  }
+}
+
+export namespace Cache {
+
+  export function cacheValid(cache: CacheData) {
+    if (cache.args.start !== undefined && cache.args.start !== seekTo) return false;
+    if (cache.args.end !== undefined && cache.args.end !== processTo) return false;
+    if (cache.args.file !== videoFile) return false;
+    return true;
+  }
+
+  export function load(): CacheData {
+    if (!existsSync(cacheFile)) {
+      return {
+        args: {
+          file: videoFile
+        }
+      }
+    }
+
+    const data = JSON.parse(readFileSync(cacheFile).toString()) as CacheData;
+    if (!cacheValid(data)) {
+      return {
+        args: {
+          file: videoFile
+        }
+      }
+    }
+
+    return data;
+  }
+
+  export function save(data: CacheData) {
+    writeFileSync(cacheFile, JSON.stringify(data));
+  }
 }

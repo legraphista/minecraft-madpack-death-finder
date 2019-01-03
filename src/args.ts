@@ -21,10 +21,17 @@ const args = yargs({})
       alias: 't',
       group: 'Input',
       type: "number",
-      default: Infinity,
+      default: 72 * 3600,
       desc: "process to at most the specified time"
     },
 
+    'cache': {
+      alias: 'c',
+      group: 'Output',
+      type: 'string',
+      desc: 'Cache file to write to',
+      default: null
+    },
     'output': {
       alias: 'o',
       group: 'Output',
@@ -42,7 +49,7 @@ const args = yargs({})
     'audio-threshold': {
       group: 'Tuning Params',
       type: 'number',
-      default: 0.1,
+      default: 0.15,
       desc: 'percentage of audio peak search based on the highest peak'
     },
     'audio-range-base': {
@@ -61,6 +68,7 @@ export const seekTo = args.from;
 export const processTo = args.to;
 export const duration = (args.to - args.from);
 
+export const cacheFile = args.cache ? args.cache : args.video + '.json';
 export const outputFile = args.output;
 
 export const cooldown = args.cooldown;

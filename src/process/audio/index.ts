@@ -1,5 +1,5 @@
 import {audioRangeBase, audioThreshold, duration, seekTo, videoFile} from "../../args";
-import {activations2time, hour, max as calcMax, min as calcMin} from "../helpers";
+import {activations2time, Cache, hour, max as calcMax, min as calcMin} from "../helpers";
 
 const FFMpeg = require('ffmpeg-progress-wrapper');
 
@@ -33,7 +33,7 @@ const run = async function run() {
       }
       if (line.indexOf('RMS_level=') !== -1) {
         const [, level] = line.split('RMS_level=');
-        levels.push(parseFloat(level) || -Infinity);
+        levels.push(parseFloat(level) || -(2 ** 53));
       }
     }
 
@@ -70,7 +70,11 @@ const process = ({ levels }: { levels: number[] }) => {
 };
 
 export default async function audio() {
-  const { levels, times } = await run();
+
+  const cacheData = Cache.load();
+  cacheData.audio_db = cacheData.audio_db || await run();
+  const { levels, times } = cacheData.audio_db;
+  Cache.save(cacheData);
 
   const { activations, threshold, min, max, avg } = process({ levels });
 

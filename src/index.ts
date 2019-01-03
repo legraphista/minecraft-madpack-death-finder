@@ -13,7 +13,7 @@ import {outputFile} from "./args";
   output.write(`Audio min level is ${audioTimes.min.toFixed(2)}`);
   output.write(`Audio avg level is ${audioTimes.avg.toFixed(2)}`);
 
-  for(let i = 0; i < audioTimes.times.length; ++i){
+  for (let i = 0; i < audioTimes.times.length; ++i) {
     const time = audioTimes.times[i];
     const level = audioTimes.levels[i];
 
