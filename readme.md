@@ -28,10 +28,12 @@ Output
   --output, -o  Output file to write to                 [string] [default: null]
 
 Tuning Params
-  --cooldown         number of seconds that need to pass since last activation
+  --cooldown          number of seconds that need to pass since last activation
                                                            [number] [default: 5]
-  --audio-threshold  percentage of audio peak search based on the highest peak
+  --audio-threshold   percentage of audio peak search based on the highest peak
                                                          [number] [default: 0.1]
+  --audio-range-base  the minimum value to base the audio range on
+                               [string] [choices: "min", "avg"] [default: "avg"]
 
 Options:
   --version  Show version number                                       [boolean]

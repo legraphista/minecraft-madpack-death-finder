@@ -1,4 +1,4 @@
-import {audioThreshold, duration, seekTo, videoFile} from "../../args";
+import {audioRangeBase, audioThreshold, duration, seekTo, videoFile} from "../../args";
 import {activations2time, hour} from "../helpers";
 
 const FFMpeg = require('ffmpeg-progress-wrapper');
@@ -50,18 +50,29 @@ const run = async function run() {
 };
 
 const process = ({ levels }: { levels: number[] }) => {
-  const max = Math.max(...levels);
-  const min = Math.min(...levels.filter(level => level > -150));
-  const range = (max - min);
+  const cleanLevels = levels.filter(level => level > -150);
+  const max = Math.max(...cleanLevels);
+  const min = Math.min(...cleanLevels);
+  const avg = cleanLevels.reduce((a, c) => a + c, 0) / cleanLevels.length;
+
+  let range;
+  switch (audioRangeBase) {
+    case "min":
+      range = (max - min);
+      break;
+    case "avg":
+      range = (max - avg);
+      break;
+  }
   const threshold = max - (audioThreshold * range);
 
-  return { activations: levels.map(level => level > threshold), threshold, min, max };
+  return { activations: levels.map(level => level > threshold), threshold, min, max, avg };
 };
 
 export default async function audio() {
   const { levels, times } = await run();
 
-  const { activations, threshold, min, max } = process({ levels });
+  const { activations, threshold, min, max, avg } = process({ levels });
 
   const activeTimes = activations2time({ activations, times });
 
@@ -70,5 +81,5 @@ export default async function audio() {
     return levels[i];
   });
 
-  return { threshold, times: activeTimes, levels: activationLevels, min, max };
+  return { threshold, times: activeTimes, levels: activationLevels, min, max, avg };
 }

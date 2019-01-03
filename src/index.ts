@@ -11,6 +11,7 @@ import {outputFile} from "./args";
   output.write(`Audio activation threshold is ${audioTimes.threshold.toFixed(2)}`);
   output.write(`Audio max level is ${audioTimes.max.toFixed(2)}`);
   output.write(`Audio min level is ${audioTimes.min.toFixed(2)}`);
+  output.write(`Audio avg level is ${audioTimes.avg.toFixed(2)}`);
 
   for(let i = 0; i < audioTimes.times.length; ++i){
     const time = audioTimes.times[i];

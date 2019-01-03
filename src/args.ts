@@ -44,6 +44,13 @@ const args = yargs({})
       type: 'number',
       default: 0.1,
       desc: 'percentage of audio peak search based on the highest peak'
+    },
+    'audio-range-base': {
+      group: 'Tuning Params',
+      type: 'string',
+      choices: ['min', 'avg'],
+      default: 'avg',
+      desc: 'the minimum value to base the audio range on'
     }
   })
   .help()
@@ -58,5 +65,6 @@ export const outputFile = args.output;
 
 export const cooldown = args.cooldown;
 export const audioThreshold = args["audio-threshold"];
+export const audioRangeBase: "avg" | "min" = args["audio-range-base"] as "avg" | "min";
 
 ok(seekTo < processTo, 'starting point cannot be lower or equal to ending point');
