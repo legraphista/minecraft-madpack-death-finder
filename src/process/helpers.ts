@@ -96,6 +96,8 @@ export interface CacheData {
 
 export namespace Cache {
 
+  let cacheData: CacheData;
+
   export function cacheValid(cache: CacheData) {
     if (cache.args.start !== undefined && cache.args.start !== seekTo) return false;
     if (cache.args.end !== undefined && cache.args.end !== processTo) return false;
@@ -104,8 +106,10 @@ export namespace Cache {
   }
 
   export function load(): CacheData {
+    if (cacheData) return cacheData;
+
     if (!existsSync(cacheFile)) {
-      return {
+      return cacheData = {
         args: {
           file: videoFile
         }
@@ -114,17 +118,17 @@ export namespace Cache {
 
     const data = JSON.parse(readFileSync(cacheFile).toString()) as CacheData;
     if (!cacheValid(data)) {
-      return {
+      return cacheData = {
         args: {
           file: videoFile
         }
       }
     }
 
-    return data;
+    return cacheData = data;
   }
 
-  export function save(data: CacheData) {
-    writeFileSync(cacheFile, JSON.stringify(data));
+  export function save() {
+    writeFileSync(cacheFile, JSON.stringify(cacheData));
   }
 }

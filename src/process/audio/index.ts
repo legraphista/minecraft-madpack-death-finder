@@ -74,7 +74,7 @@ export default async function audio() {
   const cacheData = Cache.load();
   cacheData.audio_db = cacheData.audio_db || await run();
   const { levels, times } = cacheData.audio_db;
-  Cache.save(cacheData);
+  Cache.save();
 
   const { activations, threshold, min, max, avg } = process({ levels });
 
