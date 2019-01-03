@@ -1,0 +1,25 @@
+{
+  "name": "minecraft-madpack-death-finder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "clean": "rm -r dist",
+    "install": "npm run build"
+  },
+  "author": "Stefan-Gabriel Muscalu <stefan.gabriel.muscalu@gmail.com> (http://my.corneroftheinternet.rocks/)",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^10.12.18",
+    "@types/yargs": "^12.0.5",
+    "typescript": "^3.2.2"
+  },
+  "dependencies": {
+    "ffmpeg-progress-wrapper": "^0.4.0",
+    "opencv4nodejs": "^4.13.0",
+    "source-map-support": "^0.5.9",
+    "yargs": "^12.0.5"
+  }
+}
