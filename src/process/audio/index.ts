@@ -20,7 +20,7 @@ const run = async function run() {
 
   process.on('progress', ({ progress, eta, speed }: { progress: number, eta: number, speed: number }) =>
     console.log(
-      `Processing audion: ${(progress * 100).toFixed(2)}% @${speed.toFixed(2)}x ETA:${(eta / 1000) | 0}s`
+      `Processing audio: ${(progress * 100).toFixed(2)}% @${speed.toFixed(2)}x ETA:${(eta / 1000) | 0}s`
     ));
 
   process.on('raw', (text: string) => {

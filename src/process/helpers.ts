@@ -108,7 +108,7 @@ export namespace Cache {
   export function load(): CacheData {
     if (cacheData) return cacheData;
 
-    if (!existsSync(cacheFile)) {
+    if (!cacheFile || !existsSync(cacheFile)) {
       return cacheData = {
         args: {
           file: videoFile
@@ -129,6 +129,7 @@ export namespace Cache {
   }
 
   export function save() {
+    if(!cacheFile) return;
     writeFileSync(cacheFile, JSON.stringify(cacheData));
   }
 }
