@@ -1,5 +1,5 @@
 import {audioRangeBase, audioThreshold, duration, seekTo, videoFile} from "../../args";
-import {activations2time, hour} from "../helpers";
+import {activations2time, hour, max as calcMax, min as calcMin} from "../helpers";
 
 const FFMpeg = require('ffmpeg-progress-wrapper');
 
@@ -51,8 +51,8 @@ const run = async function run() {
 
 const process = ({ levels }: { levels: number[] }) => {
   const cleanLevels = levels.filter(level => level > -150);
-  const max = Math.max(...cleanLevels);
-  const min = Math.min(...cleanLevels);
+  const max = calcMax(cleanLevels);
+  const min = calcMin(cleanLevels);
   const avg = cleanLevels.reduce((a, c) => a + c, 0) / cleanLevels.length;
 
   let range;

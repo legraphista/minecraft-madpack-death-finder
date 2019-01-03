@@ -57,3 +57,26 @@ export class Output {
     console.log(text);
   }
 }
+
+export function min(vals: number[]) {
+  let min = vals[0];
+  for (let i = 1; i < vals.length; ++i) {
+    const v = vals[i];
+    if (v < min) {
+      min = v;
+    }
+  }
+  return min;
+}
+
+
+export function max(vals: number[]) {
+  let max = vals[0];
+  for (let i = 1; i < vals.length; ++i) {
+    const v = vals[i];
+    if (v > max) {
+      max = v;
+    }
+  }
+  return max;
+}
