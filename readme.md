@@ -20,10 +20,12 @@ yarn install || npm i;
 ```
 $ ./index.js
 Input
-  --video, -i  video file path                             [string] [required]
+  --video, -i  video file path                               [string] [required]
+  --from, -s   seek to specified time before starting      [number] [default: 0]
+  --to, -t     process to at most the specified time[number] [default: Infinity]
 
 Output
-  --output, -o  Output file to write to               [string] [default: null]
+  --output, -o  Output file to write to                 [string] [default: null]
 
 Tuning Params
   --cooldown         number of seconds that need to pass since last activation
