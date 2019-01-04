@@ -1,5 +1,4 @@
-import {readFileSync, writeFileSync} from "fs";
-import {join as pathJoin} from "path";
+import {writeFileSync} from "fs";
 
 const template = `
 <!DOCTYPE html>
@@ -8,51 +7,58 @@ const template = `
     <meta charset="UTF-8">
     <title>Sound level</title>
 </head>
-<body>
+<body style="height: 100vh; margin: 0">
 
-<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-<div id="chart_div"></div>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+<div id="chartContainer" style="height: 100%; width: 5000px;"></div>
 
 <script>
 
-  google.charts.load('current', {packages: ['corechart', 'line']});
-  google.charts.setOnLoadCallback(drawBasic);
+var times = %%TIMES%%;
+var levels = %%LEVELS%%;
+var threshold = %%THRESH%%;
+var data = [];
 
-  var times = %%TIMES%%;
-  var levels = %%LEVELS%%;
-  var threshold = %%THRESH%%;
+var dataSeries = { type: "line" };
+var dataPoints = times.map((t,i) => ({
+    x: t, 
+    y: Math.max(-100,levels[i])
+}));
+dataSeries.dataPoints = dataPoints;
+data.push(dataSeries);
+data.push({
+  type: 'line',
+  dataPoints: times.map((t,i) => ({
+      x: t, 
+      y: threshold
+    }))
+});
 
-  function drawBasic() {
+var options = {
+	zoomEnabled: true,
+	animationEnabled: false,
+	title: {
+		text: "dB"
+	},
+	axisY: {
+		includeZero: false,
+		lineThickness: 1
+	},
+	data: data  
+};
 
-    var data = new google.visualization.DataTable();
-    data.addColumn('number', 'X');
-    data.addColumn('number', 'dB');
+console.log(options);
+var chart = new CanvasJS.Chart("chartContainer", options);
 
-    data.addRows(times.map((t, i) => [t, Math.max(levels[i], -100), threshold]));
-
-    var options = {
-      hAxis: {
-        title: 'Time'
-      },
-      vAxis: {
-        title: 'dB'
-      },
-      width: times.length*3,
-      height: 1000
-    };
-
-    var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-
-    chart.draw(data, options);
-  }
-
+chart.render();
+  
 </script>
 
 </body>
 </html>
 `;
 
-export default function draw_chart ({ times, levels, threshold }: { times: number[], levels: number[], threshold:number }) {
+export default function draw_chart({ times, levels, threshold }: { times: number[], levels: number[], threshold: number }) {
 
   const processed_chart = template
     .replace('%%TIMES%%', JSON.stringify(times))
