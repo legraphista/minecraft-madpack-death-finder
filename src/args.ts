@@ -25,13 +25,6 @@ const args = yargs({})
       desc: "process to at most the specified time"
     },
 
-    'cache': {
-      alias: 'c',
-      group: 'Output',
-      type: 'string',
-      desc: 'Cache file to write to',
-      default: null
-    },
     'output': {
       alias: 'o',
       group: 'Output',
@@ -68,7 +61,8 @@ export const seekTo = args.from;
 export const processTo = args.to;
 export const duration = args.to ? (args.to - args.from) : Infinity;
 
-export const cacheFile = args.cache ? args.cache : args.video + '.json';
+export const audioLevelsCacheFile = videoFile + '.audio.cache.log';
+
 export const outputFile = args.output;
 
 export const cooldown = args.cooldown;

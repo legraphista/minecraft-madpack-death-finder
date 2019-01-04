@@ -1,49 +1,92 @@
-import {audioRangeBase, audioThreshold, duration, seekTo, videoFile} from "../../args";
-import {activations2time, Cache, hour, max as calcMax, min as calcMin} from "../helpers";
+import {
+  audioLevelsCacheFile,
+  audioRangeBase,
+  audioThreshold,
+  duration,
+  seekTo,
+  videoFile
+} from "../../args";
+import {activations2time, hour, max as calcMax, min as calcMin} from "../helpers";
+import {existsSync, readFileSync} from "fs";
 
 const FFMpeg = require('ffmpeg-progress-wrapper');
 
 // ffmpeg -i <IN> -af astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level -f null -
 
+const attachFFMpegLogger = (proc: any, tag: string) =>
+  proc.on('progress', ({ progress, eta, speed }: { progress: number, eta: number, speed: number }) =>
+    console.log(
+      `${tag}: ${(progress * 100).toFixed(2)}% @${speed.toFixed(2)}x ETA:${(eta / 1000) | 0}s`
+    ));
+
+const awaitFFMpeg = async (proc: any) => {
+  try {
+    await proc.done();
+  } catch (e) {
+    console.error(proc._output);
+    throw e;
+  }
+};
+
+const extract = async function extract() {
+  let proc;
+  const audioFile = videoFile + '.audio.mkv';
+
+  // extract audio
+  if (!existsSync(audioFile)) {
+    proc = new FFMpeg([
+      '-ss', seekTo,
+      '-t', Math.min(72 * hour, duration),
+      '-i', videoFile,
+      '-c:a', 'copy',
+      '-vn',
+      '-y', audioFile
+    ]);
+    attachFFMpegLogger(proc, 'Extracting audio file');
+    await awaitFFMpeg(proc);
+  } else {
+    console.log(`Extracted audio ${audioFile} file already exists`);
+  }
+
+  // process audio
+  if (!existsSync(audioLevelsCacheFile)) {
+    proc = new FFMpeg([
+      '-i', audioFile,
+      '-af', `astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level:file=${audioLevelsCacheFile}`,
+      '-f', 'null', '-'
+    ]);
+    attachFFMpegLogger(proc, 'Processing audio file');
+    await awaitFFMpeg(proc);
+  } else {
+    console.log(`Processed audio data ${audioLevelsCacheFile} file already exists`);
+  }
+
+  return readFileSync(audioLevelsCacheFile).toString().trim();
+};
+
+const TIME_LINE_DATA_START = 'frame:1    pts:1024    pts_time:'.length;
+const LEVEL_LINE_DATA_START = 'lavfi.astats.Overall.RMS_level='.length;
+
 const run = async function run() {
 
-  const process = new FFMpeg([
-    '-ss', seekTo,
-    '-t', Math.min(72 * hour, duration),
-    '-i', videoFile,
-    '-af', 'astats=metadata=1:reset=1,ametadata=print:key=lavfi.astats.Overall.RMS_level',
-    '-f', 'null', '-'
-  ], { duration: duration > 72 * hour ? undefined : duration * 1000 });
+  const audioFileData = await extract();
+
+  const lines = audioFileData.split('\n');
 
   const times: number[] = [];
   const levels: number[] = [];
 
-  process.on('progress', ({ progress, eta, speed }: { progress: number, eta: number, speed: number }) =>
-    console.log(
-      `Processing audio: ${(progress * 100).toFixed(2)}% @${speed.toFixed(2)}x ETA:${(eta / 1000) | 0}s`
-    ));
+  for (let i = 0; i < lines.length; i += 2) {
+    // "frame:1    pts:1024    pts_time:0.0213333"
+    const time_line = lines[i + 0];
+    // "lavfi.astats.Overall.RMS_level=-88.568815"
+    const level_line = lines[i + 1];
 
-  process.on('raw', (text: string) => {
-    const lines = text.split('\n');
+    const time = parseFloat(time_line.substr(TIME_LINE_DATA_START));
+    const level = parseFloat(level_line.substr(LEVEL_LINE_DATA_START)) || -(2 ** 53);
 
-    for (const line of lines) {
-      if (line.indexOf('pts_time:') !== -1) {
-        const [, time] = line.split('pts_time:');
-        times.push(parseFloat(time) + seekTo);
-      }
-      if (line.indexOf('RMS_level=') !== -1) {
-        const [, level] = line.split('RMS_level=');
-        levels.push(parseFloat(level) || -(2 ** 53));
-      }
-    }
-
-  });
-
-  try {
-    await process.done();
-  } catch (e) {
-    console.error(process._output);
-    throw e;
+    times.push(time);
+    levels.push(level);
   }
 
   return { levels, times };
@@ -71,10 +114,7 @@ const process = ({ levels }: { levels: number[] }) => {
 
 export default async function audio() {
 
-  const cacheData = Cache.load();
-  cacheData.audio_db = cacheData.audio_db || await run();
-  const { levels, times } = cacheData.audio_db;
-  Cache.save();
+  const { levels, times } = await run();
 
   const { activations, threshold, min, max, avg } = process({ levels });
 

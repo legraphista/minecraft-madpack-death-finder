@@ -1,5 +1,5 @@
-import {cacheFile, cooldown, processTo, seekTo, videoFile} from "../args";
-import {appendFileSync, existsSync, readFileSync, unlinkSync, writeFileSync} from "fs";
+import {cooldown} from "../args";
+import {appendFileSync, existsSync, unlinkSync} from "fs";
 import {CacheData} from "./helpers";
 
 export function activations2time({ activations, times }: { activations: boolean[], times: number[] }) {
@@ -91,47 +91,5 @@ export interface CacheData {
   audio_db?: {
     levels: number[],
     times: number[],
-  }
-}
-
-export namespace Cache {
-
-  let cacheData: CacheData;
-
-  export function cacheValid(cache: CacheData) {
-    if (cache.args.start === undefined || cache.args.start !== seekTo) return false;
-    if (cache.args.end === undefined || cache.args.end !== processTo) return false;
-    if (cache.args.file !== videoFile) return false;
-    return true;
-  }
-
-  function defaultCache() : CacheData{
-    return {
-      args: {
-        file: videoFile,
-        start: seekTo,
-        end: processTo || undefined
-      }
-    }
-  }
-
-  export function load(): CacheData {
-    if (cacheData) return cacheData;
-
-    if (!cacheFile || !existsSync(cacheFile)) {
-      return cacheData = defaultCache();
-    }
-
-    const data = JSON.parse(readFileSync(cacheFile).toString()) as CacheData;
-    if (!cacheValid(data)) {
-      return cacheData = defaultCache();
-    }
-
-    return cacheData = data;
-  }
-
-  export function save() {
-    if(!cacheFile) return;
-    writeFileSync(cacheFile, JSON.stringify(cacheData));
   }
 }
