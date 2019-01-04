@@ -8,6 +8,7 @@ import {
 } from "../../args";
 import {activations2time, hour, max as calcMax, min as calcMin} from "../helpers";
 import {existsSync, readFileSync} from "fs";
+import draw_chart from "./charts/sound-level";
 
 const FFMpeg = require('ffmpeg-progress-wrapper');
 
@@ -109,7 +110,13 @@ const process = ({ levels }: { levels: number[] }) => {
   }
   const threshold = max - (audioThreshold * range);
 
-  return { activations: levels.map(level => level > threshold), threshold, min, max, avg };
+  return {
+    activations: levels.map(level => level > threshold),
+    threshold,
+    min,
+    max,
+    avg
+  };
 };
 
 export default async function audio() {
@@ -117,6 +124,9 @@ export default async function audio() {
   const { levels, times } = await run();
 
   const { activations, threshold, min, max, avg } = process({ levels });
+
+  draw_chart({ times, levels , threshold});
+
 
   const activeTimes = activations2time({ activations, times });
 
