@@ -64,7 +64,6 @@ const extract = async function extract() {
   return readFileSync(audioLevelsCacheFile).toString().trim();
 };
 
-const TIME_LINE_DATA_START = 'frame:1    pts:1024    pts_time:'.length;
 const LEVEL_LINE_DATA_START = 'lavfi.astats.Overall.RMS_level='.length;
 
 const run = async function run() {
@@ -78,11 +77,12 @@ const run = async function run() {
 
   for (let i = 0; i < lines.length; i += 2) {
     // "frame:1    pts:1024    pts_time:0.0213333"
+    // "frame:16404 pts:16797696 pts_time:349.952"
     const time_line = lines[i + 0];
     // "lavfi.astats.Overall.RMS_level=-88.568815"
     const level_line = lines[i + 1];
 
-    const time = parseFloat(time_line.substr(TIME_LINE_DATA_START));
+    const time = parseFloat(time_line.split('pts_time:')[1]);
     const level = parseFloat(level_line.substr(LEVEL_LINE_DATA_START)) || -(2 ** 53);
 
     times.push(time);
